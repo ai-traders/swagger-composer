@@ -42,6 +42,7 @@ public class ComposerTest {
         assertNotNull(output.getPath("/v2/products"));
         assertNotNull(output.getDefinitions().get("Product"));
         assertNotNull(output.getDefinitions().get("Error"));
+        assertThat(outputMerged.getConflicts().size(),is(0));
     }
 
     InputSwaggers loadBasePathCase() throws IOException {
@@ -59,6 +60,7 @@ public class ComposerTest {
         assertNotNull(output.getPath("/v2/products"));
         assertNotNull(output.getDefinitions().get("Product"));
         assertNotNull(output.getDefinitions().get("Error"));
+        assertThat(outputMerged.getConflicts().size(),is(0));
     }
 
     InputSwaggers loadCompletePartCase() throws IOException {
@@ -76,6 +78,7 @@ public class ComposerTest {
         assertTrue(output.getResponses().containsKey("PersonsOK"));
         assertNotNull(output.getParameter("Size"));
         assertNotNull(output.getDefinitions().get("ArrayOfPersons"));
+        assertThat(outputMerged.getConflicts().size(),is(0));
     }
 
     InputSwaggers loadNoConflictEqualCase() throws IOException {
@@ -94,5 +97,20 @@ public class ComposerTest {
         assertTrue(output.getResponses().containsKey("PersonsOK"));
         assertNotNull(output.getParameter("Size"));
         assertNotNull(output.getDefinitions().get("ArrayOfPersons"));
+        assertThat(outputMerged.getConflicts().size(),is(0));
+    }
+
+    InputSwaggers loadConflictCase() throws IOException {
+        return new InputSwaggers(
+                loadSwaggerSource("conflict/master.yaml"),
+                loadSwaggerSource("conflict/part1.yaml"),
+                loadSwaggerSource("conflict/part2.yaml"));
+    }
+
+    @Test
+    public void shouldDetectConflictInPartials() throws Exception {
+        InputSwaggers input = loadConflictCase();
+        MergedSwagger outputMerged = composer.merge(input);
+        assertThat(outputMerged.getConflicts().size(),is(2));
     }
 }

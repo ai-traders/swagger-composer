@@ -46,7 +46,7 @@ public class Composer {
                     } else if (toAdd.getResponses().containsKey(key)) {
                         // must be equal
                         SwaggerItem<Response> otherresponse = toAdd.getResponses().get(key);
-                        if(!otherresponse.equals(response.getValue()))
+                        if(!otherresponse.getItem().equals(response.getValue()))
                             conflicts.add(new ConflictItem<Response>(newItem,otherresponse));
                     } else {
                         // not in target, not in other partials
@@ -63,7 +63,7 @@ public class Composer {
                         ignored.add(newItem);
                     } else if (toAdd.getParameters().containsKey(key)) {
                         SwaggerItem<Parameter> otherparam = toAdd.getParameters().get(key);
-                        if(!otherparam.equals(parameter.getValue()))
+                        if(!otherparam.getItem().equals(parameter.getValue()))
                             conflicts.add(new ConflictItem<Parameter>(newItem,otherparam));
                     } else {
                         // not in target, not in other partials
@@ -81,7 +81,7 @@ public class Composer {
                 }
                 else if(toAdd.getPaths().containsKey(key)) {
                     SwaggerItem<Path> otherpath = toAdd.getPaths().get(key);
-                    if(!otherpath.equals(path.getValue()))
+                    if(!otherpath.getItem().equals(path.getValue()))
                         conflicts.add(new ConflictItem<Path>(newItem,otherpath));
                 }
                 else {

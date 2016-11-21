@@ -2,7 +2,7 @@ package com.ai_traders.swagger.composer;
 
 import io.swagger.models.Swagger;
 
-import java.util.List;
+import java.util.*;
 
 public class MergedSwagger {
     private Swagger merged;
@@ -16,6 +16,8 @@ public class MergedSwagger {
         this.ignored = ignored;
         this.conflicts = conflicts;
     }
+
+    public boolean success() { return  conflicts.size() == 0; }
 
     public Swagger getMerged() {
         return merged;
@@ -31,5 +33,16 @@ public class MergedSwagger {
 
     public List<ConflictItem> getConflicts() {
         return conflicts;
+    }
+
+    public Map<String, List<ConflictItem>> getConflictsByPairs() {
+        Map<String, List<ConflictItem>> arrayMap = new HashMap<>();
+        for(ConflictItem item : conflicts) {
+            String bothLocations = item.getLeft().getSource() + " | " + item.getRight().getSource();
+            if(!arrayMap.containsKey(bothLocations))
+                arrayMap.put(bothLocations, new ArrayList<ConflictItem>());
+            arrayMap.get(bothLocations).add(item);
+        }
+        return arrayMap;
     }
 }

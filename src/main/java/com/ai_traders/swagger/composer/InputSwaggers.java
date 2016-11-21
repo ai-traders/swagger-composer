@@ -17,6 +17,11 @@ public class InputSwaggers {
         this.partials = Arrays.asList(partials);
     }
 
+    public InputSwaggers(SwaggerSource master, List<SwaggerSource> partials) {
+        this.master = master;
+        this.partials = partials;
+    }
+
     public SwaggerSource getMaster() {
         return master;
     }

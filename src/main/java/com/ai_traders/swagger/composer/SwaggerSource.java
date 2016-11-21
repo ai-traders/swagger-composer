@@ -24,6 +24,8 @@ public class SwaggerSource {
         SwaggerParser parser = new SwaggerParser();
         this.swagger = parser.read(location);
         this.origin = location;
+        if(swagger == null)
+            throw new RuntimeException("Failed to load swagger spec from " + location);
     }
 
 
