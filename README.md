@@ -21,3 +21,4 @@ The input swagger specs must follow a convention:
    * if all definitions are equal, they are copied to output
    * if any definition is not equal to other, merge fails
  * `basePath` is pre-appended to all paths in partials before merging
+ * `basePath` is not allowed in master file

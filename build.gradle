@@ -3,7 +3,6 @@ version '0.1.0'
 
 apply plugin: 'java'
 
-
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
@@ -17,8 +16,17 @@ sourceSets {
         java {
             srcDirs = ["src/test/java"]
         }
+        resources {
+            srcDir 'src/test/resources'
+        }
     }
 }
+
+task copyTestResources(type: Copy) {
+    from "${projectDir}/src/test/resources"
+    into "${buildDir}/classes/test"
+}
+processTestResources.dependsOn copyTestResources
 
 repositories {
     mavenCentral()
