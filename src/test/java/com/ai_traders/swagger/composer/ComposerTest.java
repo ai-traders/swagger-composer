@@ -42,4 +42,20 @@ public class ComposerTest {
         assertNotNull(output.getDefinitions().get("Error"));
     }
 
+    InputSwaggers loadBasePathCase() throws IOException {
+        return new InputSwaggers(
+                loadString("basePath/master.yaml"),
+                loadString("basePath/part1.yaml"));
+    }
+
+    @Test
+    public void shouldMergeWhenPartHasBasePath() throws Exception {
+        InputSwaggers input = loadBasePathCase();
+        Swagger output = composer.merge(input);
+        assertNotNull(output.getPath("/v1/products"));
+        assertNotNull(output.getPath("/v2/products"));
+        assertNotNull(output.getDefinitions().get("Product"));
+        assertNotNull(output.getDefinitions().get("Error"));
+    }
+
 }
