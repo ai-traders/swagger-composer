@@ -58,4 +58,19 @@ public class ComposerTest {
         assertNotNull(output.getDefinitions().get("Error"));
     }
 
+    InputSwaggers loadCompletePartCase() throws IOException {
+        return new InputSwaggers(
+                loadString("completePart/master.yaml"),
+                loadString("completePart/part1.yaml"));
+    }
+
+    @Test
+    public void shouldMergeWhenPartHasResponsesParametersAndDefinitions() throws Exception {
+        InputSwaggers input = loadCompletePartCase();
+        Swagger output = composer.merge(input);
+        assertNotNull(output.getPath("/persons"));
+        assertTrue(output.getResponses().containsKey("PersonsOK"));
+        assertNotNull(output.getParameter("Size"));
+        assertNotNull(output.getDefinitions().get("ArrayOfPersons"));
+    }
 }
