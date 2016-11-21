@@ -6,91 +6,103 @@ import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.Parameter;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class Composer {
-    public Swagger merge(InputSwaggers swaggers) {
-        Swagger target = swaggers.getMaster();
-        // definitions to be added
-        Map<String, Model> definitions = new HashMap<>();
-        Map<String, Response> responses = new HashMap<>();
-        Map<String, Parameter> parameters = new HashMap<>();
-        // paths to be added
-        Map<String,Path> paths = new HashMap<>();
-        for(Swagger partial : swaggers.getPartials()) {
+    public MergedSwagger merge(InputSwaggers swaggers) {
+        Swagger target = swaggers.getMaster().getSwagger();
+        SwaggerElementsSet toAdd = new SwaggerElementsSet();
+        List<SwaggerItem> ignored = new ArrayList<>();
+        List<ConflictItem> conflicts = new ArrayList<>();
+        for(SwaggerSource partialSource : swaggers.getPartials()) {
+            String origin = partialSource.getOrigin();
+            Swagger partial = partialSource.getSwagger();
             Map<String, Model> partialDefs = partial.getDefinitions();
             if(partialDefs != null) {
                 for (Map.Entry<String, Model> def : partialDefs.entrySet()) {
-                    if (target.getDefinitions() != null && target.getDefinitions().containsKey(def.getKey())) {
-                        // TODO log ignore definition because exists in master
-                    } else if (definitions.containsKey(def.getKey())) {
-                        // must be equal
-                        throw new RuntimeException("not impl");
+                    String key = def.getKey();
+                    SwaggerItem<Model> newItem = new SwaggerItem<>(origin, key, def.getValue());
+                    if (target.getDefinitions() != null && target.getDefinitions().containsKey(key)) {
+                        ignored.add(newItem);
+                    } else if (toAdd.getDefinitions().containsKey(key)) {
+                        SwaggerItem<Model> otherdef = toAdd.getDefinitions().get(key);
+                        if(!otherdef.getItem().equals(def.getValue()))
+                           conflicts.add(new ConflictItem<Model>(newItem,otherdef));
                     } else {
                         // not in target, not in other partials
-                        definitions.put(def.getKey(), def.getValue());
+                        toAdd.getDefinitions().put(key, newItem);
                     }
                 }
             }
             Map<String, Response> partialResponses = partial.getResponses();
             if(partialResponses != null) {
                 for (Map.Entry<String, Response> response : partialResponses.entrySet()) {
-                    if (target.getResponses() != null && target.getResponses().containsKey(response.getKey())) {
-                        // TODO log ignore response because exists in master
-                    } else if (responses.containsKey(response.getKey())) {
+                    String key = response.getKey();
+                    SwaggerItem<Response> newItem = new SwaggerItem<>(origin, key, response.getValue());
+                    if (target.getResponses() != null && target.getResponses().containsKey(key)) {
+                        ignored.add(newItem);
+                    } else if (toAdd.getResponses().containsKey(key)) {
                         // must be equal
-                        throw new RuntimeException("not impl");
+                        SwaggerItem<Response> otherresponse = toAdd.getResponses().get(key);
+                        if(!otherresponse.equals(response.getValue()))
+                            conflicts.add(new ConflictItem<Response>(newItem,otherresponse));
                     } else {
                         // not in target, not in other partials
-                        responses.put(response.getKey(), response.getValue());
+                        toAdd.getResponses().put(key, newItem);
                     }
                 }
             }
             Map<String, Parameter> partialParams = partial.getParameters();
             if(partialParams != null) {
                 for (Map.Entry<String, Parameter> parameter : partialParams.entrySet()) {
-                    if (target.getParameters() != null && target.getParameter(parameter.getKey()) != null) {
-                        // TODO log ignore parameter because exists in master
-                    } else if (parameters.containsKey(parameter.getKey())) {
-                        // must be equal
-                        throw new RuntimeException("not impl");
+                    String key = parameter.getKey();
+                    SwaggerItem<Parameter> newItem = new SwaggerItem<Parameter>(origin, key, parameter.getValue());
+                    if (target.getParameters() != null && target.getParameter(key) != null) {
+                        ignored.add(newItem);
+                    } else if (toAdd.getParameters().containsKey(key)) {
+                        SwaggerItem<Parameter> otherparam = toAdd.getParameters().get(key);
+                        if(!otherparam.equals(parameter.getValue()))
+                            conflicts.add(new ConflictItem<Parameter>(newItem,otherparam));
                     } else {
                         // not in target, not in other partials
-                        parameters.put(parameter.getKey(), parameter.getValue());
+                        toAdd.getParameters().put(key, newItem);
                     }
                 }
             }
 
             String basePath = partial.getBasePath();
             for(Map.Entry<String, Path> path : partial.getPaths().entrySet()) {
-                if(target.getPath(path.getKey()) != null) {
-                    //TODO log ignore because in master
+                String key = path.getKey();
+                SwaggerItem<Path> newItem = new SwaggerItem<>(origin, key, path.getValue());
+                if(target.getPath(key) != null) {
+                    ignored.add(newItem);
                 }
-                else if(paths.containsKey(path.getKey())) {
-                    // must be equal
-                    throw new RuntimeException("not impl");
+                else if(toAdd.getPaths().containsKey(key)) {
+                    SwaggerItem<Path> otherpath = toAdd.getPaths().get(key);
+                    if(!otherpath.equals(path.getValue()))
+                        conflicts.add(new ConflictItem<Path>(newItem,otherpath));
                 }
                 else {
-                    String key = path.getKey();
                     if(basePath != null)
                         key = basePath + key;
-                    paths.put(key,path.getValue());
+                    toAdd.getPaths().put(key, newItem);
                 }
             }
         }
-        for(Map.Entry<String, Path> path : paths.entrySet()) {
-            target.path(path.getKey(),path.getValue());
+        for(Map.Entry<String, SwaggerItem<Path>> path : toAdd.getPaths().entrySet()) {
+            target.path(path.getKey(),path.getValue().getItem());
         }
-        for(Map.Entry<String, Model> def : definitions.entrySet()) {
-            target.addDefinition(def.getKey(),def.getValue());
+        for(Map.Entry<String, SwaggerItem<Model>> def : toAdd.getDefinitions().entrySet()) {
+            target.addDefinition(def.getKey(),def.getValue().getItem());
         }
-        for(Map.Entry<String, Response> response : responses.entrySet()) {
-            target.response(response.getKey(),response.getValue());
+        for(Map.Entry<String, SwaggerItem<Response>> response : toAdd.getResponses().entrySet()) {
+            target.response(response.getKey(),response.getValue().getItem());
         }
-        for(Map.Entry<String, Parameter> parameter : parameters.entrySet()) {
-            target.addParameter(parameter.getKey(),parameter.getValue());
+        for(Map.Entry<String, SwaggerItem<Parameter>> parameter : toAdd.getParameters().entrySet()) {
+            target.addParameter(parameter.getKey(),parameter.getValue().getItem());
         }
-        return target;
+        return new MergedSwagger(target,toAdd,ignored,conflicts);
     }
 }
