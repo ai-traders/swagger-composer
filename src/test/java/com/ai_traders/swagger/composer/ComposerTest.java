@@ -45,6 +45,24 @@ public class ComposerTest {
         assertThat(outputMerged.getConflicts().size(),is(0));
     }
 
+    InputSwaggers loadNoPathsMasterCase() throws IOException {
+        return new InputSwaggers(
+                loadSwaggerSource("noPathsMaster/master.yaml"),
+                loadSwaggerSource("noPathsMaster/part1.yaml"));
+    }
+
+    @Test
+    public void shouldNoPathsMasterCase() throws Exception {
+        InputSwaggers input = loadNoPathsMasterCase();
+        MergedSwagger outputMerged = composer.merge(input);
+        Swagger output = outputMerged.getMerged();
+        assertNull(output.getPath("/v1/products"));
+        assertNotNull(output.getPath("/v2/products"));
+        assertNotNull(output.getDefinitions().get("Product"));
+        assertNotNull(output.getDefinitions().get("Error"));
+        assertThat(outputMerged.getConflicts().size(),is(0));
+    }
+
     InputSwaggers loadBasePathCase() throws IOException {
         return new InputSwaggers(
                 loadSwaggerSource("basePath/master.yaml"),

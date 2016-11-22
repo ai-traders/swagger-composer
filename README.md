@@ -13,7 +13,7 @@ The input swagger specs must follow a convention:
 
 ## Merge specification
 
- * All input files are valid swagger files alone
+ * All input files are valid swagger files alone, except for master which may have no paths.
  * Only **paths, definitions, parameters and responses** are copied from partials.
  * If element is defined only in one partial, it is copied as is.
  * If element exists in more than one partial, then:
