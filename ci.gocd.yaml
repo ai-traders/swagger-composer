@@ -25,6 +25,8 @@ pipelines:
                     - "gradle build test fatJar"
       - release:
           clean_workspace: true
+          secure_variables:
+            GITHUB_TOKEN: "cZ4OyidB3m0cDgZd/VwPK9A4nUDa5/WNTMJRajj0tfRY1o+MadKyikA/GhFyKn+U"
           approval:
             type: manual
           jobs:
