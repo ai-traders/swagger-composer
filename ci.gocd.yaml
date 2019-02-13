@@ -26,7 +26,7 @@ pipelines:
       - release:
           clean_workspace: true
           secure_variables:
-            GITHUB_TOKEN: "cZ4OyidB3m0cDgZd/VwPK9A4nUDa5/WNTMJRajj0tfRY1o+MadKyikA/GhFyKn+U"
+            GITHUB_TOKEN: "AES:+QBztHVft9PmbwLLgpXvhA==:QHWQ+Ya2aJF2HoYo2G6LGlb2thWekhXiO626YKcEfeCw0IH7ornkOf7F91+RetOY"
           approval:
             type: manual
           jobs:
